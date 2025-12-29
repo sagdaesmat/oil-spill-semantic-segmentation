@@ -1,212 +1,191 @@
-# Oil Spill Semantic Segmentation System
+# SAR Oil Spill Segmentation
 
-This project presents an end-to-end deep learning system for **pixel-level semantic segmentation of oil spill phenomena** in aerial imagery, using the **LADOS (Large-scale Aerial Dataset for Oil Spill Detection)** dataset.
+This project focuses on semantic segmentation of oil spills in SAR (Synthetic Aperture Radar) imagery using deep learning.  
+The system is designed to detect and classify different oil spill–related surface phenomena at the pixel level, enabling accurate analysis and visualization for downstream applications.
 
-The system is designed to detect and localize multiple oil-related surface patterns in complex marine environments, supporting environmental monitoring and maritime safety applications.
-
----
-
-## 1. Problem Statement
-
-Manual inspection of aerial imagery for oil spill monitoring is time-consuming and error-prone.  
-This project aims to automate the process by building a deep learning–based semantic segmentation model that identifies oil-related classes at the pixel level, even in visually ambiguous scenes.
+The project follows a **modular, notebook-driven pipeline** with a clear separation between preprocessing, model training, and inference, making it suitable for research, experimentation, and frontend integration.
 
 ---
 
-## 2. Dataset
+## Project Objectives
 
-- Dataset: **LADOS – Aerial Imagery Dataset for Oil Spill Detection**
-- Data source: Aerial images collected from realistic marine scenarios
-- Task type: **Multi-class semantic segmentation**
-
-### Classes
-1. Background  
-2. Emulsion  
-3. Oil  
-4. Oil Platform  
-5. Sheen  
-6. Ship  
-
-The dataset is characterized by:
-- High intra-class variability
-- Strong class imbalance
-- Visual similarity between certain classes (e.g., Ship vs Oil Platform)
+- Perform pixel-wise semantic segmentation on SAR images
+- Detect and classify oil spill–related classes (e.g. oil, emulsion, sheen, ship)
+- Build a reproducible and well-structured ML pipeline
+- Support easy integration with a GUI or frontend application
+- Enable clear visualization and quantitative evaluation of results
 
 ---
 
-## 3. Preprocessing & Data Analysis
+## Dataset Overview
 
-- Image resizing to **640 × 640** (aligned with the LADOS research paper)
-- Data augmentation using Albumentations:
-  - Horizontal & vertical flips
-  - Rotation and scaling
-  - Brightness/contrast adjustment
-  - Gaussian blur
-- ImageNet normalization (required for pretrained backbones)
-- Pixel-wise class distribution analysis
-- Class weighting and weighted sampling to mitigate class imbalance
+- **Input**: SAR images (Sentinel-1)
+- **Labels**: Pixel-level segmentation masks
+- **Classes**:
+  - Background
+  - Emulsion
+  - Oil
+  - Oil Platform
+  - Sheen
+  - Ship
 
-All preprocessing, dataset analysis, and visualizations are implemented in the preprocessing notebook.
-
----
-
-## 4. Model Architecture
-
-### Encoder
-- **ResNet50** pretrained on ImageNet
-- Used strictly as a backbone (no ready-made segmentation models)
-
-### Decoder
-- Custom decoder with skip connections
-- Progressive upsampling using bilinear interpolation
-
-### Attention Modules (Handcrafted)
-To comply with course requirements, attention modules are implemented **from scratch**:
-- **Channel Attention**
-- **Spatial Attention**
-
-These modules enhance feature discrimination, especially in visually ambiguous regions.
-
-### Output
-- 1×1 convolution for pixel-wise class prediction
-- Output resolution matches the input image size
+The dataset is split into **train / validation / test** subsets and processed into a PyTorch-ready format.
 
 ---
 
-## 5. Training Strategy
+## System Design
 
-- Loss Function:
-  - Cross Entropy Loss (with class weights)
-  - Dice Loss
-- Optimizer: AdamW
-- Learning rate scheduling: ReduceLROnPlateau
-- Early stopping based on validation mIoU
-- Evaluation metric: **Mean Intersection over Union (mIoU)**
+The system follows a modular and scalable architecture, clearly separating data processing, model training, and inference.
 
----
+Training is performed offline, while inference is designed to be easily integrated into a frontend or API.
 
-## 6. Evaluation Results
+### Overall Pipeline
 
-- Validation mIoU ≈ **0.54**
-- Test mIoU ≈ **0.56**
+```mermaid
+flowchart TD
 
-Per-class IoU is reported for detailed performance analysis.
+A[Raw SAR Data<br/>Sentinel-1 Images]
+B[Ground Truth Masks<br/>Pixel-level]
 
----
+A --> C[Data Engineering & Preparation]
+B --> C
 
-7. System Design
+C --> D[Dataset Interface<br/>Train / Val / Test Splits]
 
-The system follows a modular and scalable pipeline, clearly separating data processing, model training, and inference.
-Training is performed offline, while inference is designed to be easily integrated into a frontend application.
+D --> E[Modeling & Training<br/>CNN + Custom Attention]
 
-Overall System Flow
-+----------------------+
-|        User          |
-|  (Aerial Image)      |
-+----------+-----------+
-           |
-           v
-+----------------------+
-|  Inference Notebook  |
-|  (03_final_*.ipynb)  |
-+----------+-----------+
-           |
-           |  Loads trained model
-           v
-+----------------------+
-|  Deep Learning Model |
-|  (PyTorch)           |
-+----------+-----------+
-           |
-           |  Pixel-wise predictions
-           v
-+----------------------+
-| Segmentation Mask &  |
-|  Class Statistics    |
-+----------+-----------+
-           |
-           v
-+----------------------+
-| Visualization / GUI  |
-| (Frontend Integration)|
-+----------------------+
+E --> F[Inference Pipeline<br/>Patch Prediction]
 
+F --> G[GUI / Visualization<br/>Image + Mask Overlay]
 Design Principles
-
 Clear separation between preprocessing, training, and inference
 
 Offline training (never triggered by the frontend)
 
-Inference-ready pipeline for easy integration with a GUI or API
+Inference-ready pipeline for GUI or API integration
 
 Reproducible experiments using organized notebooks
 
 Modular design allowing future model upgrades
 
-8. Project Structure
-notebooks/
+Repository Structure
+text
+Copy code
+sar-oil-spill-segmentation/
 │
-├── 01_preprocessing_and_analysis.ipynb
-│   ├── Dataset loading
-│   ├── Data augmentation
-│   ├── Class distribution analysis
-│   └── Data visualization
+├── data/
+│   ├── raw/                # Original SAR images and labels (not pushed)
+│   ├── processed/          # Preprocessed tensors and masks
+│   └── splits/             # Train / validation / test splits
 │
-├── 02_modeling_and_training.ipynb
-│   ├── Model architecture
-│   ├── Training loop
-│   ├── Validation & early stopping
-│   └── Model checkpointing
+├── data_engineering/       # Preprocessing and dataset preparation scripts
 │
-└── 03_final_inference_and_visualization.ipynb
-    ├── Load trained model
-    ├── Test on unseen images
-    └── Visualization and overlays
+├── models/                 # Model architectures and loss functions
+│
+├── inference/              # Inference utilities and visualization helpers
+│
+├── app/                    # Frontend or GUI integration (optional)
+│
+├── experiments/            # Training experiments and checkpoints
+│
+├── docs/
+│   ├── system_architecture.md
+│   └── data_pipeline.md
+│
+├── README.md
+└── requirements.txt
+Notebooks Overview
+The project is organized around three main notebooks, each responsible for a distinct stage in the pipeline:
 
-Execution Order
 01_preprocessing_and_analysis.ipynb
-        ↓
+Dataset loading
+
+Data augmentation
+
+Class distribution analysis
+
+Visualization of images and masks
+
+Validation of preprocessing correctness
+
 02_modeling_and_training.ipynb
-        ↓
+Model architecture definition
+
+Loss functions and metrics
+
+Training loop
+
+Validation and early stopping
+
+Model checkpointing
+
 03_final_inference_and_visualization.ipynb
+Load trained model
 
-Why This Design Works
+Inference on unseen images
 
-Matches real-world ML system workflows
+Overlay visualization (image + mask)
 
-Enables parallel team work
+Class-wise pixel statistics
 
-Keeps training isolated from deployment
+Output preparation for frontend usage
 
-Easy to extend with a backend API and frontend interface
+Model Architecture
+Encoder: ResNet-based CNN backbone
 
-Fully compliant with course requirements
----
+Decoder: U-Net–style upsampling path
 
-## 9. Team Contributions
+Attention:
 
-This project was developed by a team of five members with clearly separated responsibilities:
+Channel Attention
 
-- **Data Team (2 members)**
-  - Dataset analysis
-  - Preprocessing and augmentation
-  - Class imbalance handling
-  - Data visualization
+Spatial Attention
 
-- **Model Team (2 members)**
-  - Model architecture design
-  - Handcrafted attention modules
-  - Training, evaluation, and optimization
+Loss:
 
-- **Frontend Team (1 member)**
-  - User interface design
-  - Model integration for inference
-  - Visualization of segmentation outputs
+Cross-Entropy Loss
 
----
+Dice Loss
 
-## 10. How to Run
+Evaluation Metric:
 
-1. Install dependencies:
-```bash
-pip install -r requirements.txt
+Mean Intersection over Union (mIoU)
+
+Per-class IoU
+
+Team Contributions
+The project is developed by a team of five members with clearly defined roles:
+
+Data Engineering (2 members)
+Dataset preparation, preprocessing, augmentation, and analysis
+
+Modeling & Training (2 members)
+Model architecture design, training, evaluation, and optimization
+
+Frontend (1 member)
+GUI development and visualization integration
+
+Each module is developed independently to allow parallel work and clean integration.
+
+Usage Notes
+Training is performed offline using the training notebook
+
+Inference can be executed independently without retraining
+
+The final trained model can be directly loaded for visualization or frontend integration
+
+Raw data and generated outputs are not committed to the repository
+
+Future Work
+Improve class imbalance handling for rare classes
+
+Add post-processing for mask refinement
+
+Deploy inference as a REST API
+
+Integrate real-time frontend interaction
+
+Experiment with transformer-based architectures
+
+License
+This project is intended for academic and educational use.
