@@ -94,56 +94,93 @@ Per-class IoU is reported for detailed performance analysis.
 
 ---
 
-## 7. System Design
+7. System Design
 
-The system follows a modular and scalable design, separating data processing, model training, and inference.
+The system follows a modular and scalable pipeline, clearly separating data processing, model training, and inference.
+Training is performed offline, while inference is designed to be easily integrated into a frontend application.
 
-User
-│
-│ (Image)
-▼
-Inference Notebook
-│
-│ Loads trained model
-▼
-Deep Learning Model (PyTorch)
-│
-│ Pixel-wise predictions
-▼
-Segmentation Mask + Statistics
-│
-▼
-Visualization / Frontend Integration
+Overall System Flow
++----------------------+
+|        User          |
+|  (Aerial Image)      |
++----------+-----------+
+           |
+           v
++----------------------+
+|  Inference Notebook  |
+|  (03_final_*.ipynb)  |
++----------+-----------+
+           |
+           |  Loads trained model
+           v
++----------------------+
+|  Deep Learning Model |
+|  (PyTorch)           |
++----------+-----------+
+           |
+           |  Pixel-wise predictions
+           v
++----------------------+
+| Segmentation Mask &  |
+|  Class Statistics    |
++----------+-----------+
+           |
+           v
++----------------------+
+| Visualization / GUI  |
+| (Frontend Integration)|
++----------------------+
 
+Design Principles
 
-### Design Principles
-- Clear separation between preprocessing, training, and inference
-- Offline training (not triggered by the frontend)
-- Inference-ready pipeline for easy integration with a GUI or API
-- Reproducible experiments via notebooks
+Clear separation between preprocessing, training, and inference
 
----
+Offline training (never triggered by the frontend)
 
-## 8. Project Structure
+Inference-ready pipeline for easy integration with a GUI or API
+
+Reproducible experiments using organized notebooks
+
+Modular design allowing future model upgrades
+
+8. Project Structure
 notebooks/
+│
 ├── 01_preprocessing_and_analysis.ipynb
-│ - Dataset loading
-│ - Augmentations
-│ - Class distribution analysis
-│ - Data visualization
+│   ├── Dataset loading
+│   ├── Data augmentation
+│   ├── Class distribution analysis
+│   └── Data visualization
 │
 ├── 02_modeling_and_training.ipynb
-│ - Model architecture
-│ - Training loop
-│ - Validation & early stopping
-│ - Model checkpointing
+│   ├── Model architecture
+│   ├── Training loop
+│   ├── Validation & early stopping
+│   └── Model checkpointing
 │
 └── 03_final_inference_and_visualization.ipynb
-- Load trained model
-- Test on unseen images
-- Visualization and overlays
+    ├── Load trained model
+    ├── Test on unseen images
+    └── Visualization and overlays
 
+Execution Order
+01_preprocessing_and_analysis.ipynb
+        ↓
+02_modeling_and_training.ipynb
+        ↓
+03_final_inference_and_visualization.ipynb
 
+Why This Design Works
+
+Matches real-world ML system workflows
+
+Enables parallel team work
+
+Keeps training isolated from deployment
+
+Easy to extend with a backend API and frontend interface
+
+Fully compliant with course requirements
 ---
 
 ## 9. Team Contributions
