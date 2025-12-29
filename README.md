@@ -1,212 +1,198 @@
-Oil Spill Semantic Segmentation System
+#  Oil Spill Semantic Segmentation System
 
-This project presents an end-to-end deep learning system for pixel-level semantic segmentation of oil spill phenomena in aerial imagery, using the LADOS (Large-scale Aerial Dataset for Oil Spill Detection) dataset.
+An end-to-end deep learning system for **pixel-level semantic segmentation of oil spill phenomena** in aerial imagery using the **LADOS (Large-scale Aerial Dataset for Oil Spill Detection)** dataset.
 
-The system is designed to detect and localize multiple oil-related surface patterns in complex marine environments, supporting environmental monitoring and maritime safety applications.
+The system detects and localizes multiple oil-related surface patterns in complex marine environments, supporting **environmental monitoring** and **maritime safety** applications.
 
-1. Problem Statement
+---
 
-Manual inspection of aerial imagery for oil spill monitoring is time-consuming and error-prone.
-This project aims to automate the process by building a deep learning–based semantic segmentation model that identifies oil-related classes at the pixel level, even in visually ambiguous scenes.
+## 1. Problem Statement
 
-2. Dataset
+Manual inspection of aerial imagery for oil spill monitoring is time-consuming, expensive, and error-prone.  
+This project automates the process by developing a **deep learning–based semantic segmentation system** capable of identifying oil-related classes at the pixel level, even in visually ambiguous marine scenes.
 
-Dataset: LADOS – Aerial Imagery Dataset for Oil Spill Detection
+---
 
-Data Source: Aerial images collected from realistic marine scenarios
+## 2. Dataset
 
-Task Type: Multi-class semantic segmentation
+**Dataset:** LADOS – Aerial Imagery Dataset for Oil Spill Detection  
+**Task Type:** Multi-class Semantic Segmentation  
 
-Classes
+### Classes
+- Background  
+- Emulsion  
+- Oil  
+- Oil Platform  
+- Sheen  
+- Ship  
 
-Background
+### Dataset Characteristics
+- High intra-class variability  
+- Strong class imbalance  
+- Visual similarity between certain classes (e.g., Ship vs Oil Platform)
 
-Emulsion
+---
 
-Oil
+## 3. Preprocessing & Data Analysis
 
-Oil Platform
+- Image resizing to **640 × 640** (aligned with LADOS research paper)
+- Data augmentation using **Albumentations**:
+  - Horizontal & vertical flips
+  - Rotation & scaling
+  - Brightness & contrast adjustment
+  - Gaussian blur
+- ImageNet normalization (required for pretrained backbones)
+- Pixel-wise class distribution analysis
+- Class weighting & weighted sampling to mitigate class imbalance
 
-Sheen
+All preprocessing, analysis, and visualizations are implemented in the **preprocessing notebook**.
 
-Ship
+---
 
-Dataset Characteristics
+## 4. Model Architecture
 
-High intra-class variability
+### Encoder
+- **ResNet50** pretrained on ImageNet
+- Used strictly as a feature extraction backbone
 
-Strong class imbalance
+### Decoder
+- Custom decoder with skip connections
+- Progressive upsampling using bilinear interpolation
 
-Visual similarity between certain classes (e.g., Ship vs Oil Platform)
+### Handcrafted Attention Modules
+Implemented from scratch to comply with course requirements:
+- Channel Attention
+- Spatial Attention
 
-3. Preprocessing & Data Analysis
+These modules improve feature discrimination in visually ambiguous regions.
 
-Image resizing to 640 × 640 (aligned with the LADOS research paper)
+### Output Layer
+- 1×1 convolution for pixel-wise class prediction
+- Output resolution matches input image size
 
-Data augmentation using Albumentations:
+---
 
-Horizontal & vertical flips
+## 5. Training Strategy
 
-Rotation and scaling
+- **Loss Functions:**  
+  - Cross Entropy Loss (with class weights)  
+  - Dice Loss
+- **Optimizer:** AdamW
+- **Learning Rate Scheduler:** ReduceLROnPlateau
+- **Early Stopping:** Based on validation mIoU
+- **Evaluation Metric:** Mean Intersection over Union (mIoU)
 
-Brightness / contrast adjustment
+---
 
-Gaussian blur
+## 6. Evaluation Results
 
-ImageNet normalization (required for pretrained backbones)
-
-Pixel-wise class distribution analysis
-
-Class weighting and weighted sampling to mitigate class imbalance
-
-All preprocessing, dataset analysis, and visualizations are implemented in the preprocessing notebook.
-
-4. Model Architecture
-Encoder
-
-ResNet50 pretrained on ImageNet
-
-Used strictly as a feature extraction backbone
-
-Decoder
-
-Custom decoder with skip connections
-
-Progressive upsampling using bilinear interpolation
-
-Attention Modules (Handcrafted)
-
-To comply with course requirements, attention mechanisms are implemented from scratch:
-
-Channel Attention
-
-Spatial Attention
-
-These modules enhance feature discrimination, especially in visually ambiguous regions.
-
-Output Layer
-
-1×1 convolution for pixel-wise class prediction
-
-Output resolution matches the input image size
-
-5. Training Strategy
-
-Loss Functions:
-
-Cross Entropy Loss (with class weights)
-
-Dice Loss
-
-Optimizer: AdamW
-
-Learning Rate Scheduler: ReduceLROnPlateau
-
-Early Stopping: Based on validation mIoU
-
-Evaluation Metric: Mean Intersection over Union (mIoU)
-
-6. Evaluation Results
-
-Validation mIoU: ≈ 0.54
-
-Test mIoU: ≈ 0.56
+- **Validation mIoU:** ~0.54  
+- **Test mIoU:** ~0.56  
 
 Per-class IoU is reported for detailed performance analysis.
 
-7. System Architecture (Flow-Based)
+---
 
-Raw Aerial Image
-→ Preprocessing Pipeline
-→ (Resize → Normalize → Augment)
-→ Dataset Loader (Train / Validation / Test Splits)
-→ Deep Learning Model (Encoder → Decoder → Attention)
-→ Pixel-wise Class Prediction
-→ Segmentation Mask Generation
-→ Post-processing & Statistics Extraction
-→ Visualization Overlay (Image + Mask)
-→ Frontend / GUI / API Integration
+## 7. System Architecture (Flow Overview)
 
-Design Principles
+The system follows a linear and modular architecture designed for clarity, scalability, and deployment readiness.
 
-Clear separation between preprocessing, training, and inference
+```mermaid
+flowchart TD
+    A[Input Aerial Image] --> B[Preprocessing Pipeline]
+    B --> C[Dataset Loader]
+    C --> D[Encoder - ResNet50]
+    D --> E[Decoder + Skip Connections]
+    E --> F[Handcrafted Attention Modules]
+    F --> G[Pixel-wise Class Prediction]
+    G --> H[Segmentation Mask Output]
+    H --> I[Statistics and Visualization]
+    I --> J[Frontend / GUI / API Integration]
+```
 
-Offline training (never triggered by the frontend)
+---
 
-Inference-ready pipeline for seamless GUI or API integration
+## 8. Design Principles
 
-Reproducible experiments using notebook-driven workflows
+The system is designed following strict architectural and engineering principles to ensure robustness, reproducibility, and deployment readiness.
 
-8. Project Structure
+- **Separation of Concerns**  
+  Clear separation between preprocessing, training, and inference stages to avoid pipeline coupling.
 
+- **Offline Training**  
+  Model training is fully offline and never triggered by the frontend or inference layer.
+
+- **Inference-Ready Design**  
+  The inference pipeline is modular and can be easily integrated into a GUI or exposed as an API service.
+
+- **Reproducibility**  
+  All experiments are fully reproducible using structured and version-controlled Jupyter notebooks.
+
+---
+
+## 9. Project Structure
+
+The project is organized in a modular notebook-based structure reflecting the system pipeline stages.
+
+```
 notebooks/
 ├── 01_preprocessing_and_analysis.ipynb
-│ - Dataset loading
-│ - Data augmentation
-│ - Class distribution analysis
-│ - Data visualization
-
 ├── 02_modeling_and_training.ipynb
-│ - Model architecture
-│ - Training loop
-│ - Validation and early stopping
-│ - Model checkpointing
-
 └── 03_final_inference_and_visualization.ipynb
-- Load trained model
-- Test on unseen images
-- Visualization and overlays
+```
 
-9. Team Contributions
+Each notebook corresponds to a distinct phase in the system lifecycle.
 
-This project was developed by a team of five members with clearly separated responsibilities:
+---
 
-Data Team (2 Members)
+## 10. Team Contributions
 
-Dataset analysis
+Development was divided into specialized sub-teams to ensure parallel execution and clear ownership.
 
-Preprocessing and augmentation
+### Data Team (2 Members)
+- Dataset preprocessing and cleaning
+- Data augmentation pipeline design
+- Class imbalance analysis and mitigation
+- Dataset exploration and visualization
 
-Class imbalance handling
+### Model Team (2 Members)
+- Deep learning architecture design
+- Handcrafted attention module implementation
+- Training strategy definition
+- Model evaluation and performance analysis
 
-Data visualization
+### Frontend Team (1 Member)
+- User interface design
+- Inference pipeline integration
+- Visualization of segmentation outputs
 
-Model Team (2 Members)
+---
 
-Model architecture design
+## 11. How to Run
 
-Handcrafted attention modules
-
-Training, evaluation, and optimization
-
-Frontend Team (1 Member)
-
-User interface design
-
-Model integration for inference
-
-Visualization of segmentation outputs
-
-10. How to Run
-
-Install dependencies:
+### Step 1: Install Dependencies
+```bash
 pip install -r requirements.txt
+```
 
-Run notebooks in order:
-01_preprocessing_and_analysis.ipynb
-02_modeling_and_training.ipynb
-03_final_inference_and_visualization.ipynb
+### Step 2: Execute Notebooks Sequentially
+1. `01_preprocessing_and_analysis.ipynb`
+2. `02_modeling_and_training.ipynb`
+3. `03_final_inference_and_visualization.ipynb`
 
-11. Future Improvements
+---
 
-Improve separation between visually similar classes
+## 12. Future Improvements
 
-Experiment with transformer-based encoders
+Several extensions can be explored to further enhance system performance and applicability.
 
-Deploy the model using a backend API with a web-based frontend
+- Improve discrimination between visually similar classes
+- Experiment with transformer-based or hybrid encoder architectures
+- Deploy inference as a scalable backend API with a web-based frontend
+- Extend the system toward panoptic segmentation
 
-Extend the system to panoptic segmentation
+---
 
-License
+## License
 
 MIT License
