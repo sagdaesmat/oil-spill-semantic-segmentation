@@ -1,0 +1,39 @@
+# =====================
+# Data (DO NOT PUSH)
+# =====================
+data/
+datasets/
+kaggle/
+*.zip
+
+# =====================
+# Model Weights
+# =====================
+*.pth
+*.pt
+
+# =====================
+# Outputs & Experiments
+# =====================
+outputs/
+results/
+runs/
+
+# =====================
+# Jupyter
+# =====================
+.ipynb_checkpoints/
+
+# =====================
+# Python cache
+# =====================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# =====================
+# Environment files
+# =====================
+.env
+.venv
