@@ -1,39 +1,31 @@
-# =====================
-# Data (DO NOT PUSH)
-# =====================
-data/
-datasets/
-kaggle/
-*.zip
-
-# =====================
-# Model Weights
-# =====================
-*.pth
-*.pt
-
-# =====================
-# Outputs & Experiments
-# =====================
-outputs/
-results/
-runs/
-
-# =====================
-# Jupyter
-# =====================
-.ipynb_checkpoints/
-
-# =====================
-# Python cache
-# =====================
+# Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
 
-# =====================
-# Environment files
-# =====================
+# Jupyter
+.ipynb_checkpoints/
+
+# Data (never commit datasets)
+data/
+dataset/
+datasets/
+
+# Outputs / models
+outputs/
+checkpoints/
+*.pth
+*.pt
+*.ckpt
+
+# Logs
+logs/
+
+# Environment
 .env
-.venv
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
